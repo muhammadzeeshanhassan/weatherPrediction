@@ -53,7 +53,7 @@ class WeatherReport
       puts "Lowest Temperature: #{report[:min]} C"
       puts "Average Humidity: #{report[:avg_humidity]}%"
     else
-      puts "File not found, empty, or contains no valid data."
+      puts "File not found OR No valid data"
     end
   end
 end
@@ -77,3 +77,4 @@ report.display_report()
 # p obj.file_path
 # p obj.year
 # p obj.month
+# report.city = "Murree"
