@@ -1,11 +1,17 @@
+require 'csv'
+
 class WeatherReport
   attr_reader :city, :year, :month, :file_path  # Just Getter Function
+
+  MAX_TEMP_KEY = 'Max TemperatureC'
+  MIN_TEMP_KEY = 'Min TemperatureC'
+  HUMIDITY_KEY = 'Max Humidity'
 
   def initialize(city, year, month)
     @city = city.capitalize
     @year = year
     @month = month.capitalize
-    @file_path = build_file_path()
+    @file_path = build_file_path
   end
 
   def build_file_path
@@ -20,20 +26,38 @@ class WeatherReport
     min_temps = []
     humidities = []
 
-    File.foreach(file_path) do |line|
-      next if line.start_with?("GST") # Because Every file first line start with GST
+    begin
+      CSV.foreach(file_path, headers: true) do |row|
+        max = (row[MAX_TEMP_KEY]).to_i
+        min = (row[MIN_TEMP_KEY]).to_i
+        hum = (row[HUMIDITY_KEY]).to_i
 
-      parts = line.split(',')
-      max = parts[1].to_i rescue nil
-      min = parts[3].to_i rescue nil
-      hum = parts[8].to_i rescue nil
+        max_temps << max if max
+        min_temps << min if min
+        humidities << hum if hum
 
-      max_temps << max if max
-      min_temps << min if min
-      humidities << hum if hum
+      end
+    rescue CSV::MalformedCSVError => e
+      puts "Error reading file: #{e.message}"
+      return nil
     end
 
-    return nil if max_temps.empty?() || min_temps.empty?() || humidities.empty?()
+   
+
+    # File.foreach(file_path) do |line|
+    #   next if line.start_with?("GST") # Because Every file first line start with GST
+
+    #   parts = line.split(',')
+    #   max = parts[1].to_i rescue nil
+    #   min = parts[3].to_i rescue nil
+    #   hum = parts[8].to_i rescue nil
+
+    #   max_temps << max if max
+    #   min_temps << min if min
+    #   humidities << hum if hum
+    # end
+
+    return nil if max_temps.empty? || min_temps.empty? || humidities.empty?
 
     {
       max: max_temps.max,
@@ -70,11 +94,3 @@ month = gets.chomp()
 
 report = WeatherReport.new(city, year, month)
 report.display_report()
-
-
-# obj = WeatherReport.new(city, year, month)
-# p obj.city
-# p obj.file_path
-# p obj.year
-# p obj.month
-# report.city = "Murree"
